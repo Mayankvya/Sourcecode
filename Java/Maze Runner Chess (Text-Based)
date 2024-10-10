@@ -1,0 +1,120 @@
+import java.util.Scanner;
+
+public class MazeRunnerChess {
+
+    static char[][] board = new char[8][8]; // 8x8 chessboard
+    static boolean[][] walls = new boolean[8][8]; // Walls on the board
+    static int[] player1KingPos = {0, 4}; // Starting position of Player 1's King
+    static int[] player2KingPos = {7, 4}; // Starting position of Player 2's King
+    static char[] playerSymbols = {'K', 'k'}; // 'K' for Player 1's King, 'k' for Player 2's King
+    static int currentPlayer = 0; // Player 1 starts
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        setupBoard();
+        setupWalls(); // Create random walls for the maze
+
+        while (true) {
+            printBoard();
+            System.out.println("Player " + (currentPlayer + 1) + " (" + playerSymbols[currentPlayer] + "), make your move.");
+            System.out.println("Enter move direction (w/a/s/d): "); // w=up, a=left, s=down, d=right
+            char move = scanner.next().charAt(0);
+
+            boolean validMove = moveKing(move);
+            if (!validMove) {
+                System.out.println("Invalid move! Try again.");
+                continue;
+            }
+
+            // Check for checkmate (simple version here, modify based on actual chess rules)
+            if (checkWin()) {
+                printBoard();
+                System.out.println("Player " + (currentPlayer + 1) + " (" + playerSymbols[currentPlayer] + ") wins!");
+                break;
+            }
+
+            // Switch to the other player
+            currentPlayer = (currentPlayer + 1) % 2;
+        }
+    }
+
+    // Set up the initial empty board
+    public static void setupBoard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                board[i][j] = ' ';
+            }
+        }
+        board[player1KingPos[0]][player1KingPos[1]] = 'K'; // Player 1's King
+        board[player2KingPos[0]][player2KingPos[1]] = 'k'; // Player 2's King
+    }
+
+    // Create walls on the board to make it a maze
+    public static void setupWalls() {
+        // Randomly place walls (for simplicity, placing fixed walls)
+        walls[2][2] = true;
+        walls[2][3] = true;
+        walls[4][5] = true;
+        walls[5][5] = true;
+    }
+
+    // Print the game board with walls
+    public static void printBoard() {
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (walls[i][j]) {
+                    System.out.print(" W "); // Wall
+                } else {
+                    System.out.print(" " + board[i][j] + " "); // Piece or empty
+                }
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    // Move the king based on player input (w/a/s/d)
+    public static boolean moveKing(char direction) {
+        int[] kingPos = currentPlayer == 0 ? player1KingPos : player2KingPos;
+        int newX = kingPos[0];
+        int newY = kingPos[1];
+
+        switch (direction) {
+            case 'w': newX--; break; // Up
+            case 'a': newY--; break; // Left
+            case 's': newX++; break; // Down
+            case 'd': newY++; break; // Right
+            default: return false; // Invalid direction
+        }
+
+        // Check boundaries
+        if (newX < 0 || newX >= 8 || newY < 0 || newY >= 8) {
+            return false; // Invalid move
+        }
+
+        // Check if the new cell is a wall
+        if (walls[newX][newY]) {
+            return false; // Cannot move through a wall
+        }
+
+        // Update the king's position
+        board[kingPos[0]][kingPos[1]] = ' '; // Clear old position
+        kingPos[0] = newX;
+        kingPos[1] = newY;
+        board[newX][newY] = playerSymbols[currentPlayer]; // Place the king in the new position
+
+        return true;
+    }
+
+    // Check if the current player has won (simple checkmate condition)
+    public static boolean checkWin() {
+        int[] opponentKingPos = currentPlayer == 0 ? player2KingPos : player1KingPos;
+
+        // If the current player's king is adjacent to the opponent's king, it's a win
+        if (Math.abs(opponentKingPos[0] - player1KingPos[0]) <= 1 &&
+            Math.abs(opponentKingPos[1] - player1KingPos[1]) <= 1) {
+            return true;
+        }
+        return false;
+    }
+}
